@@ -1,0 +1,41 @@
+amqp:
+  cacertfile: /etc/ardexa/keys/Ardexa CA chain - amqps.crt
+  certfile: /etc/ardexa/keys/client.crt
+  keyfile: /etc/ardexa/keys/client.key
+  hostname: broker.ardexa.com
+  vhost: __YOUR_ORG_NAME__
+
+tail:
+  - file: /tmp/to_cloud
+    table: messages
+    source: to_cloud
+    expect: log
+
+  - file: /tmp/door
+    table: messages
+    source: door
+    expect: bool
+
+run:
+  - command : /usr/local/bin/read_dht temp | tee /tmp/temperature
+    frequency : 3
+    expect: decimal
+    table: temperature
+    source: room
+    meta:
+      units: °C
+      comment: this is the temperature reading from the DHT22 sensor
+
+  - command : /usr/local/bin/read_dht hum | tee /tmp/humidity
+    frequency : 3
+    expect: decimal
+    table: humidity
+    source: room
+    meta:
+      units: '%'
+      comment: this is the humidity reading from the DHT22 sensor
+
+debug: 0
+stdout: false
+heartbeat: false
+heartbeat_timeout: 60
